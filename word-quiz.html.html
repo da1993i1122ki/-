@@ -1,0 +1,115 @@
+
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>英単語クイズ</title>
+  <style>
+    body { font-family: sans-serif; padding: 20px; background-color: #f9fafb; }
+    input, select, button { margin-top: 10px; font-size: 1rem; padding: 5px; }
+    .question { margin: 10px 0; }
+  </style>
+</head>
+<body>
+  <h1>英単語クイズ</h1>
+
+  <label for="gradeSelect">学年を選択：</label>
+  <select id="gradeSelect" onchange="updateUnitOptions()">
+    <option value="">学年を選んでください</option>
+    <option value="1年">1年</option>
+    <option value="2年">2年</option>
+    <option value="3年">3年</option>
+  </select><br>
+
+  <label for="unitSelect">ユニットを選択：</label>
+  <select id="unitSelect"></select><br>
+
+  <button onclick="generateQuiz()">出題する</button>
+
+  <form id="quizForm" onsubmit="gradeQuiz(event)"></form>
+  <div id="result" style="margin-top: 20px; font-size: 1.2rem; font-weight: bold;"></div>
+
+  <script>
+    const unitOptions = {
+      "1年": ["Unit0","Unit1","Unit2","Unit3","Unit4","Stage Activity 1","Unit5","Unit6","Unit7","Unit8","Stage Activity 2","Unit9","Unit10","Stage Activity 3","Let's Read"],
+      "2年": ["Unit 0","Unit 1","Unit 2","Unit 3","Stage Activity 1","Let's Read 1","Unit 4","Unit 5","Unit 6","Stage Activity 2","Let's Read 2","Unit 7","Stage Activity 3","Let's Read 3"],
+      "3年": ["Unit 1","Unit 2","Unit 3","Stage Activity 1","Let's Read 1","Unit 4","Unit 5","Stage Activity 2","Unit 6","Stage Activity 3","Let's Read 2","Let's Read 3"]
+    };
+
+    const words = [
+      { grade: "1年", unit: "Unit1", english: "apple", japanese: "りんご", strict: false },
+      { grade: "1年", unit: "Unit1", english: "book", japanese: "本", strict: false },
+      { grade: "1年", unit: "Unit2", english: "cat", japanese: "猫", strict: false },
+      { grade: "1年", unit: "Unit2", english: "dog", japanese: "犬", strict: false },
+
+      { grade: "2年", unit: "Unit1", english: "travel", japanese: "旅行", strict: false },
+      { grade: "2年", unit: "Unit1", english: "mountain", japanese: "山", strict: false },
+      { grade: "2年", unit: "Unit2", english: "river", japanese: "川", strict: false },
+      { grade: "2年", unit: "Unit2", english: "bridge", japanese: "橋", strict: false },
+
+      { grade: "3年", unit: "Unit1", english: "America", japanese: "アメリカ", strict: true },
+      { grade: "3年", unit: "Unit1", english: "April", japanese: "4月", strict: true },
+      { grade: "3年", unit: "Unit2", english: "challenge", japanese: "挑戦", strict: false },
+      { grade: "3年", unit: "Unit2", english: "success", japanese: "成功", strict: false },
+      { grade: "3年", unit: "Unit3", english: "inspire", japanese: "刺激する", strict: false },
+      { grade: "3年", unit: "Unit3", english: "achieve", japanese: "達成する", strict: false }
+    ];
+
+    let currentQuestions = [];
+
+    function updateUnitOptions() {
+      const grade = document.getElementById('gradeSelect').value;
+      const unitSelect = document.getElementById('unitSelect');
+      unitSelect.innerHTML = '<option value="">ユニットを選んでください</option>';
+      if (!grade) return;
+
+      unitOptions[grade].forEach(unit => {
+        const option = document.createElement('option');
+        option.value = unit;
+        option.textContent = unit;
+        unitSelect.appendChild(option);
+      });
+    }
+
+    function generateQuiz() {
+      const grade = document.getElementById('gradeSelect').value;
+      const unit = document.getElementById('unitSelect').value;
+      if (!grade || !unit) return alert('学年とユニットを選んでください');
+
+      const filtered = words.filter(w => w.grade === grade && w.unit === unit);
+      currentQuestions = filtered.sort(() => 0.5 - Math.random()).slice(0, 10);
+
+      const form = document.getElementById('quizForm');
+      form.innerHTML = currentQuestions.map((q, i) =>
+        `<div class="question">
+          ${i + 1}. ${q.japanese}：
+          <input type="text" name="q${i}" />
+        </div>`
+      ).join('') + '<br><button type="submit">結果を表示</button>';
+
+      document.getElementById('result').innerHTML = '';
+    }
+
+    function gradeQuiz(event) {
+      event.preventDefault();
+      const form = document.getElementById('quizForm');
+      let score = 0;
+
+      currentQuestions.forEach((q, i) => {
+        const userAnswer = form[`q${i}`].value.trim();
+        const correctAnswer = q.english.trim();
+
+        const isCorrect = q.strict
+          ? userAnswer === correctAnswer
+          : userAnswer.toLowerCase() === correctAnswer.toLowerCase();
+
+        if (isCorrect) score++;
+      });
+
+      const resultDiv = document.getElementById('result');
+      resultDiv.textContent = `スコア: ${score} / 10
+` + (score === 10 ? '🎉 Conglaturation!' : '💪 Fight!');
+    }
+  </script>
+</body>
+</html>
